@@ -30,6 +30,7 @@ const welcome_bot = {
 
 const me = {
     email: "me@example.com",
+    delivery_email: "delivery-me@example.com",
     user_id: 30,
     full_name: "Me Myself",
     timezone: "America/Los_Angeles",
@@ -173,6 +174,7 @@ const bob = {
 
 const charles = {
     email: "charles@example.com",
+    delivery_email: "charles-delivery@example.com",
     user_id: 301,
     full_name: "Charles Dickens",
     avatar_url: "http://charles.com/foo.png",
@@ -181,6 +183,7 @@ const charles = {
 
 const maria = {
     email: "Athens@example.com",
+    delivery_email: "Athens-delivery@example.com",
     user_id: 302,
     full_name: "Maria Athens",
     // With client_gravatar enabled, requests that client compute gravatar
@@ -189,12 +192,14 @@ const maria = {
 
 const ashton = {
     email: "ashton@example.com",
+    delivery_email: "ashton-delivery@example.com",
     user_id: 303,
     full_name: "Ashton Smith",
 };
 
 const linus = {
     email: "ltorvalds@example.com",
+    delivery_email: "ltorvalds-delivery@example.com",
     user_id: 304,
     full_name: "Linus Torvalds",
 };
@@ -231,12 +236,14 @@ const stephen2 = {
 
 const noah = {
     email: "emnoa@example.com",
+    delivery_email: "emnoa-delivery@example.com",
     user_id: 1200,
     full_name: "Nöôáàh Ëmerson",
 };
 
 const plain_noah = {
     email: "otheremnoa@example.com",
+    delivery_email: "otheremnoa-delivery@example.com",
     user_id: 1201,
     full_name: "Nooaah Emerson",
 };
@@ -742,6 +749,10 @@ test_people("filtered_users", () => {
     assert.equal(filtered_people.size, 1);
     assert.ok(filtered_people.has(linus.user_id));
 
+    filtered_people = people.filter_people_by_search_terms(users, ["Athens-del"]);
+    assert.equal(filtered_people.size, 1);
+    assert(filtered_people.has(maria.user_id));
+
     filtered_people = people.filter_people_by_search_terms(users, ["ch di", "maria"]);
     assert.equal(filtered_people.size, 2);
     assert.ok(filtered_people.has(charles.user_id));
@@ -853,6 +864,7 @@ test_people("message_methods", () => {
             avatar_url_small: "http://zulip.zulipdev.com/avatar/30?s=50",
             is_muted: true,
             email: "me@example.com",
+            delivery_email: "me-delivery@example.com",
             full_name: me.full_name,
             is_admin: false,
             is_bot: false,
@@ -1046,6 +1058,7 @@ test_people("get_people_for_search_bar", ({override}) => {
     for (const i of _.range(20)) {
         const person = {
             email: "whatever@email.com",
+            delivery_email: "whatever-delivery@email.com",
             full_name: "James Jones",
             user_id: 1000 + i,
         };
@@ -1345,7 +1358,7 @@ test_people("get_visible_email", () => {
     assert.equal(email, steven.delivery_email);
 
     email = people.get_visible_email(maria);
-    assert.equal(email, maria.email);
+    assert.equal(email, maria.delivery_email);
 });
 
 test_people("get_active_message_people", () => {

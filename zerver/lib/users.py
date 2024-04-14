@@ -498,6 +498,7 @@ def format_user_row(
 
     result = APIUserDict(
         email=row["email"],
+        # delivery_email=row["delivery_email"]
         user_id=row["id"],
         avatar_version=row["avatar_version"],
         is_admin=is_admin,

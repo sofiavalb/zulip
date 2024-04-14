@@ -1206,8 +1206,11 @@ export function build_termlet_matcher(termlet: string): (user: User) => boolean 
             full_name = user.name_with_diacritics_removed;
         }
         const names = full_name.toLowerCase().split(" ");
+        
+        let email = get_visible_email(user);
+        email = email.toLowerCase();
 
-        return names.some((name) => name.startsWith(termlet));
+        return names.some((name) => name.startsWith(termlet)) || email.startsWith(termlet);
     };
 }
 
