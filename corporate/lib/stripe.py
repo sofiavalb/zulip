@@ -52,6 +52,7 @@ from corporate.models import (
     get_customer_by_remote_realm,
     get_customer_by_remote_server,
 )
+from zerver.lib.cache import cache_with_key, get_realm_seat_count_cache_key
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.send_email import (
@@ -153,6 +154,14 @@ def format_discount_percentage(discount: Optional[Decimal]) -> Optional[str]:
 
 def get_latest_seat_count(realm: Realm) -> int:
     return get_seat_count(realm, extra_non_guests_count=0, extra_guests_count=0)
+
+
+@cache_with_key(lambda realm: get_realm_seat_count_cache_key(realm.id), timeout=3600 * 24)
+def get_cached_seat_count(realm: Realm) -> int:
+    # This is a cache value  we're intentionally okay with not invalidating.
+    # All that means is that this value will lag up to 24 hours before getting updated.
+    # We use this for calculating the uploaded files storage limit for paid Cloud organizations.
+    return get_latest_seat_count(realm)
 
 
 def get_seat_count(
@@ -2981,10 +2990,10 @@ class BillingSession(ABC):
             self.make_end_of_cycle_updates_if_needed(plan, event_time)
 
         # The primary way to not create an invoice for a plan is to not have
-        # any new ledger entry. The 'plan.is_paid()' check adds an extra
+        # any new ledger entry. The 'plan.is_a_paid_plan()' check adds an extra
         # layer of defense to avoid creating any invoices for customers not on
         # paid plan. It saves a DB query too.
-        if plan.is_paid():
+        if plan.is_a_paid_plan():
             if plan.invoicing_status == CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT:
                 invoiced_through_id = -1
                 licenses_base = None
@@ -5174,7 +5183,9 @@ def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
                 plan.reminder_to_review_plan_email_sent = True
                 plan.save(update_fields=["reminder_to_review_plan_email_sent"])
 
-            free_plan_with_no_next_plan = not plan.is_paid() and plan.status == CustomerPlan.ACTIVE
+            free_plan_with_no_next_plan = (
+                not plan.is_a_paid_plan() and plan.status == CustomerPlan.ACTIVE
+            )
             free_trial_pay_by_invoice_plan = plan.is_free_trial() and not plan.charge_automatically
             last_audit_log_update = remote_server.last_audit_log_update
             if not free_plan_with_no_next_plan and (

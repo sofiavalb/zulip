@@ -20,6 +20,18 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 252**
+
+* `PATCH /realm/profile_fields/{field_id}`: `name`, `hint`, `display_in_profile_summary`,
+  `required` and `field_data` fields are now optional during an update. Previously we
+  required the clients to populate the fields in the PATCH request even if there was
+  no change to those fields' values.
+
+**Feature level 251**
+
+* [`POST /register`](/api/register-queue): Fixed `realm_upload_quota_mib`
+  value to actually be in MiB. Until now the value was in bytes.
+
 **Feature level 250**
 
 * [`GET /messages`](/api/get-messages),
