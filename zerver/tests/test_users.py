@@ -322,6 +322,7 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(hamlet["email"], user.email)
         self.assertIsNone(hamlet["avatar_url"])
         self.assertEqual(hamlet["delivery_email"], user.delivery_email)
+        self.assertIn('delivery_email', hamlet)
 
         # Also verify the /events code path.  This is a bit hacky, but
         # we need to verify client_gravatar is not being overridden.
@@ -347,6 +348,7 @@ class PermissionTest(ZulipTestCase):
         hamlet = find_dict(members, "user_id", user.id)
         self.assertEqual(hamlet["email"], f"user{user.id}@zulip.testserver")
         self.assertEqual(hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1))
+        self.assertIn('delivery_email', hamlet)
 
         # client_gravatar is still turned off for admins.  In theory,
         # it doesn't need to be, but client-side changes would be
@@ -2399,6 +2401,7 @@ class GetProfileTest(ZulipTestCase):
         self.assertFalse(result["is_admin"])
         self.assertFalse(result["is_owner"])
         self.assertFalse(result["is_guest"])
+        self.assertTrue('delivery_email' in result)
         self.assertEqual(result["role"], UserProfile.ROLE_MEMBER)
         self.assertEqual(result["delivery_email"], hamlet.delivery_email)
         self.login("iago")
