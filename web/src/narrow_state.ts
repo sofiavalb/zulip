@@ -11,7 +11,7 @@ import * as unread from "./unread";
 export let has_shown_message_list_view = false;
 
 export function filter(): Filter | undefined {
-    // `All messages`, `Recent Conversations` and `Inbox` return undefined;
+    // `Combined feed`, `Recent Conversations` and `Inbox` return undefined;
     if (message_lists.current === undefined || message_lists.current.data.filter.is_in_home()) {
         return undefined;
     }
@@ -318,8 +318,8 @@ export function _possible_unread_message_ids(
     return undefined;
 }
 
-// Are we narrowed to direct messages: all direct messages
-// or direct messages with particular people.
+// Are we narrowed to direct messages: the direct message feed or a
+// specific direct message conversation.
 export function narrowed_to_pms(current_filter: Filter | undefined = filter()): boolean {
     if (current_filter === undefined) {
         return false;

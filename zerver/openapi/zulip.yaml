@@ -10681,7 +10681,7 @@ paths:
 
                     - "recent_topics" - Recent conversations view
                     - "inbox" - Inbox view
-                    - "all_messages" - All messages view
+                    - "all_messages" - Combined feed view
 
                     **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
                     called `default_view`, which was new in Zulip 4.0 (feature level 42).
@@ -12161,6 +12161,44 @@ paths:
                         description: |
                           An example JSON error response for when the user doesn't have permission
                           to subscribe other users to streams and `stream_ids` is not empty.
+  /invites/{invite_id}:
+    delete:
+      operationId: revoke-email-invite
+      summary: Revoke an email invitation
+      tags: ["invites"]
+      description: |
+        Revoke an [email invitation](/help/invite-new-users#send-email-invitations).
+
+        A user can only revoke [invitations that they can
+        manage](/help/invite-new-users#manage-pending-invitations).
+      parameters:
+        - name: invite_id
+          in: path
+          description: |
+            The ID of the email invitation to be revoked.
+          schema:
+            type: integer
+          example: 1
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "No such invitation",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for an invalid `invite_id`:
   /register:
     post:
       operationId: register-queue
@@ -13464,7 +13502,7 @@ paths:
 
                               - "recent_topics" - Recent conversations view
                               - "inbox" - Inbox view
-                              - "all_messages" - All messages view
+                              - "all_messages" - Combined feed view
 
                               **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
                               called `default_view`, which was new in Zulip 4.0 (feature level 42).
@@ -15787,7 +15825,7 @@ paths:
 
                               - "recent_topics" - Recent conversations view
                               - "inbox" - Inbox view
-                              - "all_messages" - All messages view
+                              - "all_messages" - Combined feed view
 
                               **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
                               called `default_view`, which was new in Zulip 4.0 (feature level 42).
@@ -16922,7 +16960,7 @@ paths:
 
                     - "recent_topics" - Recent conversations view
                     - "inbox" - Inbox view
-                    - "all_messages" - All messages view
+                    - "all_messages" - Combined feed view
 
                     **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
                     called `default_view`, which was new in Zulip 4.0 (feature level 42).
@@ -18251,11 +18289,12 @@ paths:
                   - example:
                       {
                         "code": "BAD_REQUEST",
-                        "msg": "Cannot send to multiple streams",
+                        "msg": "Missing stream_id",
                         "result": "error",
                       }
                     description: |
-                      An example JSON error response for when user sends to multiple streams:
+                      An example JSON error response when the user composes a stream message
+                      and `stream_id` is not specified:
   /user_groups/create:
     post:
       operationId: create-user-group
@@ -19972,8 +20011,8 @@ components:
           type: boolean
           description: |
             Whether the user has muted the stream. Muted streams do
-            not count towards your total unread count and do not show up in
-            `All messages` view (previously known as `Home` view).
+            not count towards your total unread count and do not show
+            up in the `Combined feed` view (previously known as `All messages`).
 
             **Changes**: Prior to Zulip 2.1.0, this feature was
             represented by the more confusingly named `in_home_view` (with the
